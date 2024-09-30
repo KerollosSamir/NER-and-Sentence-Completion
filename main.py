@@ -1,15 +1,23 @@
 import streamlit as st
 from transformers import AutoTokenizer, AutoModelForTokenClassification, AutoModelForMaskedLM
+from transformers import pipeline
+import torch
 
-# Load pre-trained models for NER and sentence completion
-model_ner = AutoModelForTokenClassification.from_pretrained("tner/xlm-roberta-base-conll2003")
-tokenizer_ner = AutoTokenizer.from_pretrained("tner/xlm-roberta-base-conll2003", use_fast=False)
-tokenizer = AutoTokenizer.from_pretrained("model_path", model_max_length=512, do_lower_case=True, tokenizer_class="SentencePieceTokenizer")
+@st.cache_resource
+def load_ner_model():
+    return pipeline("ner", model="eventdata-utd/conflibert-named-entity-recognition")
 
+@st.cache_resource
+def load_mlm_model():
+    return pipeline("fill-mask", model="google-bert/bert-base-uncased")
 
+def perform_ner(text, ner_pipeline):
+    entities = ner_pipeline(text)
+    return entities
 
-model_sc = AutoModelForMaskedLM.from_pretrained("bert-base-uncased")
-tokenizer_sc = AutoTokenizer.from_pretrained("bert-base-uncased")
+def perform_mlm(text, mlm_pipeline):
+    results = mlm_pipeline(text)
+    return results
 
 # Streamlit app
 def main():
