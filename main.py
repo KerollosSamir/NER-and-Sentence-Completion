@@ -62,7 +62,9 @@
 #   main()
 
 import streamlit as st
+from transformers import AutoTokenizer, AutoModelForTokenClassification, AutoModelForMaskedLM
 from transformers import pipeline
+import torch
 
 @st.cache_resource
 def load_ner_model():
@@ -70,13 +72,15 @@ def load_ner_model():
 
 @st.cache_resource
 def load_mlm_model():
-    return pipeline("fill-mask", model="google-bert/bert-base-uncased")
+    tokenizer = AutoTokenizer.from_pretrained("google-bert/bert-base-uncased")
+    model = AutoModelForMaskedLM.from_pretrained("google-bert/bert-base-uncased")
+    return tokenizer, model
 
 def perform_ner(text, ner_pipeline):
     entities = ner_pipeline(text)
     return entities
 
-def perform_mlm(text, mlm_pipeline):
+def perform_mlm(text, tokenizer, model):
     input_ids = tokenizer.encode(text, return_tensors="pt")
     mask_token_index = torch.where(input_ids == tokenizer.mask_token_id)[1]
 
@@ -94,7 +98,6 @@ def perform_mlm(text, mlm_pipeline):
     return results
 
 st.title("NER and Masked Language Model Prediction")
-st.markdown("---")
 
 # Load models
 ner_pipeline = load_ner_model()
