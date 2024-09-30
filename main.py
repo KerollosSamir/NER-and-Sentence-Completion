@@ -63,55 +63,63 @@
 
 import streamlit as st
 from transformers import AutoTokenizer, AutoModelForTokenClassification, AutoModelForMaskedLM
+from transformers import pipeline
 
-# Load pre-trained models for NER and sentence completion
-model_ner = AutoModelForTokenClassification.from_pretrained("tner/xlm-roberta-base-conll2003")
-tokenizer_ner = AutoTokenizer.from_pretrained("tner/xlm-roberta-base-conll2003")
+@st.cache_resource
+def load_ner_model():
+    return pipeline("ner", model="eventdata-utd/conflibert-named-entity-recognition")
 
+@st.cache_resource
+def load_mlm_model():
+    return pipeline("fill-mask", model="google-bert/bert-base-uncased")
 
+def perform_ner(text, ner_pipeline):
+    entities = ner_pipeline(text)
+    return entities
 
-model_sc = AutoModelForMaskedLM.from_pretrained("bert-base-uncased")
-tokenizer_sc = AutoTokenizer.from_pretrained("bert-base-uncased")
+def perform_mlm(text, mlm_pipeline):
+    results = mlm_pipeline(text)
+    return results
 
-# Streamlit app
-def main():
-    st.set_page_config(
-        page_title="NER and Sentence Completion App",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
+st.title("NER and Masked Language Model Prediction")
 
-    st.title("NER and Sentence Completion")
-    st.markdown("---")
+# Load models
+ner_pipeline = load_ner_model()
+mlm_pipeline = load_mlm_model()
 
-    col1, col2 = st.columns(2)
+# Create tabs
+ner_tab, mlm_tab = st.tabs(["Named Entity Recognition", "Masked Language Model"])
 
-    with col1:
-        st.header("Named Entity Recognition")
-        text_ner = st.text_area("Enter text for NER:",
-                                 "John Doe works at OpenAI and lives in San Francisco.",
+with ner_tab:
+    st.header("Named Entity Recognition")
+    ner_input = st.text_area("Enter text for NER:", 
+                                 "John Doe works at OpenAI and lives in San Francisco.", 
                                  height=200)
-        if st.button("Perform NER"):
-            inputs = tokenizer_ner(text_ner, return_tensors="pt")
-            outputs = model_ner(**inputs)
-            predictions = outputs.logits.argmax(dim=-1)
-            predicted_labels = [tokenizer_ner.decode(pred_ids) for pred_ids in predictions.squeeze().tolist()]
+    if st.button("Perform NER"):
+        entities = perform_ner(ner_input, ner_pipeline)
+        if entities:
             st.success("Named entities:")
-            for entity in predicted_labels:
-                st.write(f"- {entity}")
+            for entity in entities:
+                st.write(f"- {entity['word']}: {entity['entity_group']}")
+        else:
+            st.warning("No named entities found in the text.")
 
-    with col2:
-        st.header("Sentence Completion")
-        text_sc = st.text_area("Enter text for sentence completion (use [MASK] for missing word):",
-                                 "The [MASK] brown [MASK] jumps over the lazy dog.",
+with mlm_tab:
+    st.header("Masked Language Model Prediction")
+    mlm_input = st.text_area("Enter text with [MASK] (you can use multiple masks):", 
+                                 "The [MASK] brown [MASK] jumps over the lazy dog.", 
                                  height=200)
-        if st.button("Complete Sentence"):
-            inputs_sc = tokenizer_sc(text_sc, return_tensors="pt")
-            outputs_sc = model_sc(**inputs_sc)
-            predictions_sc = outputs_sc.logits.argmax(dim=-1)
-            predicted_word = tokenizer_sc.decode(predictions_sc[0][inputs_sc.input_ids[0] == tokenizer_sc.mask_token_id][0])
-            st.success("Completed sentence:")
-            st.write(text_sc.replace("[MASK]", predicted_word))
+    if st.button("Predict Masked Words"):
+        if "[MASK]" in mlm_input:
+            predicted_words_list = perform_mlm(mlm_input, mlm_pipeline)
+            for i, predicted_words in enumerate(predicted_words_list):
+                st.write(f"Predictions for MASK {i+1}:")
+                for j, word in enumerate(predicted_words):
+                    st.write(f"  Top {j+1} predicted word: {word}")
+        else:
+            st.warning("Please include at least one [MASK] in your input text.")
 
-if __name__ == "__main__":
-    main()
+st.sidebar.info("This app demonstrates Named Entity Recognition and Masked Language Model prediction using Hugging Face Transformers.")
+
+st.markdown("---")
+st.markdown(" this app was made by Kerollos Samir ")
