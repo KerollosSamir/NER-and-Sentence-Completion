@@ -60,7 +60,6 @@
 
 # if __name__ == "__main__":
 #   main()
-%%writefile app.py
 
 import streamlit as st
 from transformers import AutoTokenizer, AutoModelForTokenClassification, AutoModelForMaskedLM
