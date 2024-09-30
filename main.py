@@ -50,9 +50,14 @@ with col1:
                                     "John Doe works at OpenAI and lives in San Francisco.",
                                     height=200)
             if st.button("Perform NER"):
-                entities = perform_ner(text_ner, ner_pipeline)
-                for entity in entities:
-                 st.write(f"Entity: {entity['word']}, Label: {entity['entity_group']}, Score: {entity['score']:.4f}")
+                # Indent the following lines to include them in the if block
+                inputs = tokenizer(text_ner, return_tensors="pt")
+                outputs = model(**inputs)
+                predictions = outputs.logits.argmax(dim=-1)
+                predicted_labels = [tokenizer.decode(pred_ids) for pred_ids in predictions.squeeze().tolist()]
+                st.success("Named entities:")
+                for entity in predicted_labels:
+                    st.write(f"- {entity}")
 
 with col2:
             st.header("Sentence Completion")
@@ -60,14 +65,13 @@ with col2:
                                     "The [MASK] brown [MASK] jumps over the lazy dog.",
                                     height=200)
             if st.button("Complete Sentence"):
-                if "[MASK]" in text_sc:
-                    predicted_words_list = perform_mlm(text_sc, mlm_tokenizer, mlm_model)
-                    for i, predicted_words in enumerate(predicted_words_list):
-                        st.write(f"Predictions for MASK {i+1}:")
-                        for j, word in enumerate(predicted_words):
-                            st.write(f"  Top {j+1} predicted word: {word}")
-                else:
-                    st.warning("Please include at least one [MASK] in your input text.")
+                # Indent the following lines to include them in the if block
+                inputs_sc = tokenizer(text_sc, return_tensors="pt")
+                outputs_sc = model(**inputs_sc)
+                predictions_sc = outputs_sc.logits.argmax(dim=-1)
+                predicted_word = tokenizer.decode(predictions_sc[0][inputs_sc.input_ids[0] == tokenizer_sc.mask_token_id][0])
+                st.success("Completed sentence:")
+                st.write(text_sc.replace("[MASK]", predicted_word))
 
 st.sidebar.info("This app demonstrates Named Entity Recognition and Masked Language Model prediction using Hugging Face Transformers.")
 
