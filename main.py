@@ -3,8 +3,10 @@ from transformers import AutoTokenizer, AutoModelForTokenClassification, AutoMod
 
 # Load pre-trained models for NER and sentence completion
 model_ner = AutoModelForTokenClassification.from_pretrained("tner/xlm-roberta-base-conll2003")
-tokenizer_ner = AutoTokenizer.from_pretrained("tner/xlm-roberta-base-conll2003")
+tokenizer_ner = AutoTokenizer.from_pretrained("tner/xlm-roberta-base-conll2003", use_fast=False)
 tokenizer = AutoTokenizer.from_pretrained("model_path", model_max_length=512, do_lower_case=True, tokenizer_class="SentencePieceTokenizer")
+
+
 
 model_sc = AutoModelForMaskedLM.from_pretrained("bert-base-uncased")
 tokenizer_sc = AutoTokenizer.from_pretrained("bert-base-uncased")
