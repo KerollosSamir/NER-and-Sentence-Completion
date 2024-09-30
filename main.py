@@ -72,13 +72,15 @@ def load_ner_model():
 
 @st.cache_resource
 def load_mlm_model():
-    return pipeline("fill-mask", model="google-bert/bert-base-uncased")
+    tokenizer = AutoTokenizer.from_pretrained("google-bert/bert-base-uncased")
+    model = AutoModelForMaskedLM.from_pretrained("google-bert/bert-base-uncased")
+    return tokenizer, model  # Return both tokenizer and model
 
 def perform_ner(text, ner_pipeline):
     entities = ner_pipeline(text)
     return entities
 
-def perform_mlm(text, mlm_pipeline):
+def perform_mlm(text, tokenizer, model):
     input_ids = tokenizer.encode(text, return_tensors="pt")
     mask_token_index = torch.where(input_ids == tokenizer.mask_token_id)[1]
 
@@ -99,7 +101,7 @@ st.title("NER and Masked Language Model Prediction")
 
 # Load models
 ner_pipeline = load_ner_model()
-mlm_tokenizer, mlm_model = load_mlm_model()
+mlm_tokenizer, mlm_model = load_mlm_model()  # Assign returned values
 
 # Create tabs
 ner_tab, mlm_tab = st.tabs(["Named Entity Recognition", "Masked Language Model"])
