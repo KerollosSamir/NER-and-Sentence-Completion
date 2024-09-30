@@ -1,7 +1,5 @@
 import streamlit as st
-from transformers import AutoTokenizer, AutoModelForTokenClassification, AutoModelForMaskedLM
 from transformers import pipeline
-import torch
 
 @st.cache_resource
 def load_ner_model():
@@ -19,45 +17,54 @@ def perform_mlm(text, mlm_pipeline):
     results = mlm_pipeline(text)
     return results
 
-# Streamlit app
-def main():
-    st.set_page_config(
-        page_title="NER and Sentence Completion App",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
+def save_results(text, entities, predicted_words):
+    # Implement your desired saving logic here
+    # For example, you could save the results to a file or database
+    filename = "results.txt"
+    with open(filename, "a") as f:
+        f.write(f"Input Text: {text}\n")
+        f.write(f"Named Entities: {entities}\n")
+        f.write(f"Predicted Words: {predicted_words}\n")
+        f.write("\n")
+    st.success("Results saved to " + filename)
 
-    st.title("NER and Sentence Completion")
-    st.markdown("---")
+st.title("NER and Masked Language Model Prediction")
 
-    col1, col2 = st.columns(2)
+# Load models
+ner_pipeline = load_ner_model()
+mlm_pipeline = load_mlm_model()
 
-    with col1:
-        st.header("Named Entity Recognition")
-        text_ner = st.text_area("Enter text for NER:",
-                                 "John Doe works at OpenAI and lives in San Francisco.",
+# Create tabs
+ner_tab, mlm_tab = st.tabs(["Named Entity Recognition", "Masked Language Model"])
+
+with ner_tab:
+    st.header("Named Entity Recognition")
+    ner_input = st.text_area("Enter text for NER:", 
+                                 "John Doe works at OpenAI and lives in San Francisco.", 
                                  height=200)
-        if st.button("Perform NER"):
-            inputs = tokenizer_ner(text_ner, return_tensors="pt")
-            outputs = model_ner(**inputs)
-            predictions = outputs.logits.argmax(dim=-1)
-            predicted_labels = [tokenizer_ner.decode(pred_ids) for pred_ids in predictions.squeeze().tolist()]
-            st.success("Named entities:")
-            for entity in predicted_labels:
-                st.write(f"- {entity}")
+    if st.button("Perform NER"):
+        entities = perform_ner(ner_input, ner_pipeline)
+        for entity in entities:
+            st.success(f"Entity: {entity['word']}, Label: {entity['entity_group']}, Score: {entity['score']:.4f}")
+        save_results(ner_input, entities, [])  # Save results for NER
 
-    with col2:
-        st.header("Sentence Completion")
-        text_sc = st.text_area("Enter text for sentence completion (use [MASK] for missing word):",
-                                 "The [MASK] brown [MASK] jumps over the lazy dog.",
+with mlm_tab:
+    st.header("Masked Language Model Prediction")
+    mlm_input = st.text_area("Enter text with [MASK] (you can use multiple masks):", 
+                                 "The [MASK] brown [MASK] jumps over the lazy dog.", 
                                  height=200)
-        if st.button("Complete Sentence"):
-            inputs_sc = tokenizer_sc(text_sc, return_tensors="pt")
-            outputs_sc = model_sc(**inputs_sc)
-            predictions_sc = outputs_sc.logits.argmax(dim=-1)
-            predicted_word = tokenizer_sc.decode(predictions_sc[0][inputs_sc.input_ids[0] == tokenizer_sc.mask_token_id][0])
-            st.success("Completed sentence:")
-            st.write(text_sc.replace("[MASK]", predicted_word))
+    if st.button("Predict Masked Words"):
+        if "[MASK]" in mlm_input:
+            predicted_words_list = perform_mlm(mlm_input, mlm_pipeline)
+            for i, predicted_words in enumerate(predicted_words_list):
+                st.write(f"Predictions for MASK {i+1}:")
+                for j, word in enumerate(predicted_words):
+                    st.write(f"  Top {j+1} predicted word: {word}")
+            save_results(mlm_input, [], predicted_words_list)  # Save results for MLM
+        else:
+            st.warning("Please include at least one [MASK] in your input text.")
 
-if __name__ == "__main__":
-    main()
+st.sidebar.info("This app demonstrates Named Entity Recognition and Masked Language Model prediction using Hugging Face Transformers.")
+
+st.markdown("---")
+st.markdown(" this app was made by Kerollos Samir")
