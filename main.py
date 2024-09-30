@@ -44,9 +44,13 @@ with ner_tab:
                                  height=200)
     if st.button("Perform NER"):
         entities = perform_ner(ner_input, ner_pipeline)
-        for entity in entities:
-            st.success(f"Entity: {entity['word']}, Label: {entity['entity_group']}, Score: {entity['score']:.4f}")
-        save_results(ner_input, entities, [])  # Save results for NER
+        if entities:
+            st.success("Named entities:")
+            for entity in entities:
+                st.write(f"- {entity['word']}: {entity['entity_group']}")
+            # Visualize entities using Streamlit's visualization tools (e.g., st.markdown with HTML)
+        else:
+            st.warning("No named entities found in the text.")
 
 with mlm_tab:
     st.header("Masked Language Model Prediction")
@@ -60,7 +64,7 @@ with mlm_tab:
                 st.write(f"Predictions for MASK {i+1}:")
                 for j, word in enumerate(predicted_words):
                     st.write(f"  Top {j+1} predicted word: {word}")
-            save_results(mlm_input, [], predicted_words_list)  # Save results for MLM
+            save_results(mlm_input, [], predicted_words_list)# Save results for MLM
         else:
             st.warning("Please include at least one [MASK] in your input text.")
 
