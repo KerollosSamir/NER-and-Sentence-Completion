@@ -39,8 +39,8 @@ ner_tab, mlm_tab = st.tabs(["Named Entity Recognition", "Masked Language Model"]
 
 with ner_tab:
     st.header("Named Entity Recognition")
-    ner_input = st.text_area("Enter text for NER:", 
-                                 "John Doe works at OpenAI and lives in San Francisco.", 
+    ner_input = st.text_area("Enter text for NER:",
+                                 "John Doe works at OpenAI and lives in San Francisco.",
                                  height=200)
     if st.button("Perform NER"):
         entities = perform_ner(ner_input, ner_pipeline)
@@ -50,8 +50,8 @@ with ner_tab:
 
 with mlm_tab:
     st.header("Masked Language Model Prediction")
-    mlm_input = st.text_area("Enter text with [MASK] (you can use multiple masks):", 
-                                 "The [MASK] brown [MASK] jumps over the lazy dog.", 
+    mlm_input = st.text_area("Enter text with [MASK] (you can use multiple masks):",
+                                 "The [MASK] brown [MASK] jumps over the lazy dog.",
                                  height=200)
     if st.button("Predict Masked Words"):
         if "[MASK]" in mlm_input:
