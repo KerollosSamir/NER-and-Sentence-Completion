@@ -1,1 +1,73 @@
-# NER-and-Sentence-Completion
+
+# Named-Entity-Recognition (NER) and Sentence Completion
+
+This project provides a web application that performs **Named Entity Recognition (NER)** and **Sentence Completion** using state-of-the-art natural language processing models from Hugging Face. The application is built with Streamlit to provide an interactive and user-friendly interface.
+
+🔗 **[Visit the Application](https://ner-and-sentence-completion-xgp6aeodasayb9svbyxhnw.streamlit.app/)**
+
+## Features
+
+- **Named Entity Recognition (NER)**: Identifies and classifies named entities (e.g., person names, organizations, locations) in the input text.
+- **Sentence Completion**: Predicts masked words in a given sentence, allowing for multiple [MASK] tokens.
+- **Streamlit Integration**: A clean and interactive web interface for model interaction.
+
+## Getting Started
+
+### Prerequisites
+
+Ensure you have the following installed on your system:
+
+- Python 3.7 or later
+- Streamlit (for creating the web application)
+- PyTorch (for running the models)
+- Hugging Face `transformers` library
+- Other required Python libraries listed in `requirements.txt`
+
+### Installation
+
+Follow these steps to set up the project:
+
+1. **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/KerollosSamir/NER-and-Sentence-Completion.git
+    cd Named-Entity-Recognition-NER-and-Sentence-Completion
+    ```
+
+2. **Install the dependencies:**
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+### Usage
+
+To run the project locally, use Streamlit:
+
+```bash
+streamlit run main.py
+```
+
+This will start the Streamlit server and open the web application in your default browser, where you can try out the NER and Sentence Completion functionalities.
+
+## Contributing
+
+Contributions are welcome! If you have suggestions or find issues, feel free to:
+
+- Fork this project.
+- Submit issues and feature requests.
+- Create pull requests with your improvements or fixes.
+
+For major changes, please open an issue first to discuss what you would like to change.
+
+## Application Preview
+
+Here's a screenshot of the application interface:
+
+![Application Preview](https://github.com/user-attachments/assets/7143f8e1-5c93-4481-9664-fe21e3b7f947)
+
+
+
+## Contact
+
+If you have any questions or feedback, feel free to reach out. Enjoy exploring the app, and happy learning!!
